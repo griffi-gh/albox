@@ -19,7 +19,7 @@ end
 function phyTeleport(obj,x,y)
   local bdy2=phyReq(obj,'body')
   bdy2:setPosition(x,y)
-  bdy2:setLinearVelocity(0,0.1)
+  phyVCancel(obj)
 end
 
 function phyVCancel(obj)

@@ -59,7 +59,7 @@ function love.draw() local g=love.graphics g.setColor(1,1,1,1) love.graphics.res
   end
   g.print('FPS:'..love.timer.getFPS()..'\nRAM:'..math.ceil(collectgarbage('count'))..'kb'..'\nF1-HELP')
   if love.keyboard.isDown('f1') then
-   g.print('WHEEL-Size\nLMB-SPAWN/MOVE\nRMB-SPAWN STATIC/DELETE\nSPACE-PAUSE\nT-Slowmo\nR-RESET\nW-ADD TO SELECTION\nQ-WELD SELECTED',w/2)
+   g.print('WHEEL-Size\nLMB-SPAWN/MOVE\nRMB-SPAWN STATIC/DELETE\nSPACE-PAUSE\nT-Slowmo\nR-RESET\nW-ADD TO SELECTION\nQ-WELD SELECTED\nU-CANCEL WELD',w/2)
    g.rectangle('line',w/2-15,0,w,125)
   end
 end

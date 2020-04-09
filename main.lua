@@ -1,5 +1,5 @@
 APPNAME='ALBOX'
-VERSION='alpha 0.1'
+VERSION='alpha 0.2'
 ---------------------
 require'fn'
 require'phy'

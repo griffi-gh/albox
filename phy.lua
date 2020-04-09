@@ -25,7 +25,7 @@ end
 function phyVCancel(obj)
   local function cancel(obj)
     obj:setAngularVelocity(0)
-    obj:setLinearVelocity(0,0)
+    obj:setLinearVelocity(0,0.1)
   end
   local body=phyReq(obj,'body')
   cancel(body)

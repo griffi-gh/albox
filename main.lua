@@ -5,20 +5,24 @@ require'fn'
 require'phy'
 require'gui'
 
+local lv1,lv2=love.getVersion()
+lver='LÖVE '..lv1..'.'..lv2
+if not(love.isVersionCompatible('11.3')) then warning_love2d=true end
+
 function reset()
   objects={}
   toweld={}
   welds={}
   spawnsize=25
   stop=false
-  moveobject=nil
+  movetmp=nil
   love.physics.setMeter(64)
   world = love.physics.newWorld(0,9.81*love.physics.getMeter(),true)
   ins(objects,phyObject(world,400/2+200,500,400,25))
 end
 
 function love.load(arg)
-  love.window.setTitle(APPNAME..' '..VERSION)
+  love.window.setTitle(APPNAME..' '..VERSION..' ('..lver..'/'..jit.version..'/'..jit.os..')')
   love.window.setMode(800,600,{msaa=3,vsync=0,resizable=true,minwidth=650,minheight=570})--fullscreentype='exclusive',fullscreen=true
   reset()
 end
@@ -30,12 +34,12 @@ function love.update(dt) gc_=(gc_ or -1)+1 if gc_>120 then collectgarbage('colle
   world:update(dt/slowmo)
   if(hover and phyExists(objects[hover]) and m1)then
     if not moveobject then 
-      moveobject=objects[hover]
+      movetmp={o=objects[hover],x=mx,y=my}
     end
-    phyTeleport(moveobject,mx,my)
+    phyTeleport(movetmp.o,mx,my)
     phyFix(objects)
   else
-    moveobject=nil
+    movetmp=nil
   end
 end
 
@@ -68,11 +72,14 @@ function love.draw() local g=love.graphics g.setColor(1,1,1,1) love.graphics.res
    g.print('WHEEL-Size\nLMB-SPAWN/MOVE\nRMB-SPAWN STATIC/DELETE\nSPACE-PAUSE\nT-Slowmo\nR-RESET\nW-ADD TO SELECTION\nQ-WELD SELECTED\nU-CANCEL WELD',w/2)
    g.rectangle('line',w/2-15,0,w,135)
   end
+  if warning_love2d then
+    g.setColor(1,0,0)
+    g.print('Warning! Incompatible LÖVE version',0,h-14)
+  end
 end
 
 function love.keypressed(key)
   if key=='r' then --reload
-    --love.load('reload')
     reset()
   end
   if key=='w' then --add to weld
@@ -88,7 +95,7 @@ function love.keypressed(key)
       welds[#welds]=nil
     end
   end
-  if key=='space' then
+  if key=='space' then --pause
     stop=not(stop)
   end
 end

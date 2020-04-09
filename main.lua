@@ -22,7 +22,7 @@ function reset()
 end
 
 function love.load(arg)
-  love.window.setTitle(APPNAME..' '..VERSION..' ('..lver..'/'..jit.version..'/'..jit.os..')')
+  love.window.setTitle(APPNAME..' '..VERSION..' ('..lver..'/'..jit.version..'/'..jit.os..' '..jit.arch..')')
   love.window.setMode(800,600,{msaa=3,vsync=0,resizable=true,minwidth=650,minheight=570})--fullscreentype='exclusive',fullscreen=true
   reset()
 end
@@ -37,8 +37,8 @@ function love.update(dt) gc_=(gc_ or -1)+1 if gc_>120 then collectgarbage('colle
       movetmp={o=objects[hover],x=mx,y=my}
     end
     phyTeleport(movetmp.o,mx,my)
-    phyFix(objects)
   else
+    if(moveobject)then phyFix(objects) end
     movetmp=nil
   end
 end
@@ -86,7 +86,7 @@ function love.keypressed(key)
     phyAddToGroup(toweld,objects[hover],hover)
   end
   if key=='q' then --confirm weld
-    ins(welds,phyWeldGroup(toweld))
+    ins(welds,phyWeldGroup(toweld,false))
     toweld={}
   end
   if key=='u' then --unweld latest

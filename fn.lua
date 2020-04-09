@@ -2,6 +2,10 @@ function ins(t,v)
   t[#t+1]=v
 end
 
+function pal(code)
+  return pcall(assert(loadstring(code)))
+end
+
 function love.graphics.outlRect(x,y,w,h,colA,colB)
   local g=love.graphics
   colA=colA or {1,1,1,0.15}

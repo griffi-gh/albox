@@ -83,12 +83,13 @@ function phyAddToGroup(group,o,oid,allowDubl,allowNil)
   end
 end
 
-function phyWeldGroup(toweld,noCollide)
+function phyWeldGroup(toweld,noCollide,weldto1)
   local con={}
   if(#toweld>1)then
     for i,v in ipairs(toweld) do
       if i~=1 then
-        local wa,wb=toweld[1],v
+        local wa,wb=toweld[i-1],toweld[i]
+        if(weldto1)then wa=toweld[1] end
         con[#con+1]=phyWeld(wa.o,wb.o,noCollide)
       end
     end
@@ -105,10 +106,15 @@ end
 ]]
 
 function phyUnweldGroup(con)
-  if con and type(con)=='table' then
-    for i,v in ipairs(con) do 
-      v:destroy()
+  local function unweld(con)
+    if con and type(con)=='table' then
+      for i,v in ipairs(con) do
+        v:destroy()
+      end
     end
+  end
+  if not(pcall(unweld,con)) then
+    print('error (unable to unweld)')
   end
 end
 

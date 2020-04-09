@@ -1,5 +1,5 @@
 APPNAME='ALBOX'
-VERSION='alpha 0.2'
+VERSION='alpha 0.3'
 ---------------------
 require'fn'
 require'phy'
@@ -9,8 +9,23 @@ local lv1,lv2=love.getVersion()
 lver='LÖVE '..lv1..'.'..lv2
 if not(love.isVersionCompatible('11.3')) then warning_love2d=true end
 
+--OLDHELP='WHEEL-Size\nLMB-SPAWN/MOVE\nRMB-SPAWN STATIC/DELETE\nSPACE-PAUSE\nT-Slowmo\nR-RESET\nW-ADD TO SELECTION\nQ-WELD SELECTED\nU-CANCEL WELD'
+HELP='WHEEL(or [ ])-Brush size\nLMB-Spawn dynamic/Select/Primary action\nRMB-Spawn static/secondary action\nSPACE-PAUSE\nT-Slowmo\nNumber keys(1-9)-Switch mode shortcut\nTODO:Better help'
+
+function cancelWeld()
+  if(#welds>0)then
+    phyUnweldGroup(welds[#welds])
+    welds[#welds]=nil
+  end
+end
+
 function reset()
+  gui.text2=''
+  gui.selected=1
+  ctool='sp'
+  fig='sqr'
   objects={}
+  selection={}
   toweld={}
   welds={}
   spawnsize=25
@@ -32,13 +47,13 @@ function love.update(dt) gc_=(gc_ or -1)+1 if gc_>120 then collectgarbage('colle
   m1=love.mouse.isDown(1)
   local slowmo=1;if love.keyboard.isDown('t') then slowmo=5 end;if(stop)then slowmo=math.huge end
   world:update(dt/slowmo)
-  if(hover and phyExists(objects[hover]) and m1)then
+  if(hover and phyExists(objects[hover]) and m1 and ctool=='mv')then
     if not moveobject then 
       movetmp={o=objects[hover],x=mx,y=my}
     end
     phyTeleport(movetmp.o,mx,my)
+    phyFix(objects)
   else
-    if(moveobject)then phyFix(objects) end
     movetmp=nil
   end
 end
@@ -49,14 +64,33 @@ function love.draw() local g=love.graphics g.setColor(1,1,1,1) love.graphics.res
   for i,v in ipairs(objects) do
     if phyExists(v) then
       g.polygon("fill",phyPoly(v))
-      local ish=v.fixture:testPoint(mx,my)
-      if ish then hover=i 
-        g.setColor(1,0,0,0.8)
+      
+      local ishs=false
+      if(#selection>0)then --check if in selection
+        for i2,v2 in ipairs(selection) do
+          if v2.i==i then             
+            ishs=true
+            break
+          end
+        end
+      end
+      
+      local ish=v.fixture:testPoint(mx,my) 
+      if ish then --if mousehover
+        hover=i 
+        g.setColor(1,0,0,0.8) 
+      end
+      if ishs then --if in selection
+        g.setColor(0,1,0,0.8) 
+      end
+      
+      if ish or ishs then
         love.graphics.setLineWidth(2)
         g.polygon("line",phyPoly(v))
         love.graphics.setLineWidth(1)
         g.setColor(1,1,1)
       end
+      
       local ox,oy=v.body:getPosition()
       if(oy>w*2)then
         phyDestroy(v)
@@ -64,49 +98,68 @@ function love.draw() local g=love.graphics g.setColor(1,1,1,1) love.graphics.res
     end
   end
   local curx,cury=mx-spawnsize/2,my-spawnsize/2
-  if not hover then
+  if not hover and ctool=='sp' then
     g.outlRect(curx,cury,spawnsize)
   end
   g.print('FPS:'..love.timer.getFPS()..'\nRAM:'..math.ceil(collectgarbage('count'))..'kb'..'\nF1-HELP')
   if love.keyboard.isDown('f1') then
-   g.print('WHEEL-Size\nLMB-SPAWN/MOVE\nRMB-SPAWN STATIC/DELETE\nSPACE-PAUSE\nT-Slowmo\nR-RESET\nW-ADD TO SELECTION\nQ-WELD SELECTED\nU-CANCEL WELD',w/2)
+   g.print(HELP,w/2)
    g.rectangle('line',w/2-15,0,w,135)
   end
   if warning_love2d then
     g.setColor(1,0,0)
     g.print('Warning! Incompatible LÖVE version',0,h-14)
   end
+  gui.draw()
 end
 
 function love.keypressed(key)
   if key=='r' then --reload
     reset()
   end
-  if key=='w' then --add to weld
-    phyAddToGroup(toweld,objects[hover],hover)
-  end
-  if key=='q' then --confirm weld
-    ins(welds,phyWeldGroup(toweld,false))
-    toweld={}
-  end
-  if key=='u' then --unweld latest
-    if(#welds>0)then
-      phyUnweldGroup(welds[#welds])
-      welds[#welds]=nil
-    end
-  end
   if key=='space' then --pause
     stop=not(stop)
+  end
+  
+  if key=='[' then
+    love.wheelmoved(0,-3)
+  elseif key==']'then
+    love.wheelmoved(0,3)
+  end
+  
+  local ton=tonumber(key)
+  if ton and ton<=#gui.modes then --add to weld
+    gui.vclick(ton)
   end
 end
 
 function love.mousepressed(x,y,b)
-  if not hover then
-    local m
-    if b==1 then m='d' elseif b==2 then m='s' end
-    ins(objects,phyObject(world,x,y,spawnsize,spawnsize,m,1))
-  elseif(b==2)then
-    phyDestroy(objects[hover])
+  if not gui.click(x,y,b) then
+    if ctool=='sp' then
+      if not hover then
+        local m
+        if b==1 then m='d' elseif b==2 then m='s' end
+        ins(objects,phyObject(world,x,y,spawnsize,spawnsize,m,1))
+      end
+    elseif ctool=='sl' then
+      if b==1 then
+        if hover and objects[hover] then
+          phyAddToGroup(selection,objects[hover],hover)
+        end
+      elseif b==2 then
+        local tmp={}
+        for i,v in ipairs(selection) do
+          if not(v.i==hover) then ins(tmp,v) end
+        end
+        selection=tmp
+      end
+    elseif ctool=='dl' then
+      if b==1 and phyExists(objects[hover]) then
+        phyDestroy(objects[hover])
+      end
+    elseif ctool=='uw' then
+      phyAutoDeweld(objects[hover])
+    end
   end
 end
 

@@ -5,7 +5,7 @@ function phyObject(wrl,x,y,w,h,t,m)
   local body = love.physics.newBody(wrl,x,y,t)
   local shape = love.physics.newRectangleShape(w,h)
   local fixture = love.physics.newFixture(body,shape,m)
-  return{body=body,shape=shape,fixture=fixture,exists=true}
+  return{body=body,shape=shape,fixture=fixture,type=nil,exists=true}
 end
 
 function phyReq(obj,part)
@@ -53,9 +53,11 @@ function phyPoly(v)
   return v.body:getWorldPoints(v.shape:getPoints())
 end
 
-function phyWeld(o1,o2,noCollide)
-  local bdy2=phyReq(obj,'body')
-  return love.physics.newWeldJoint(o1.body,o2.body,o1.body:getX(),o1.body:getY(),not(noCollide))
+function phyWeld(o1o,o2o,noCollide)
+  local o1,o2=phyReq(o1o,'body'),phyReq(o2o,'body')
+  if o1 and o2 then
+    return love.physics.newWeldJoint(o1,o2,o1:getX(),o1:getY(),not(noCollide))
+  end
 end
 
 function phyDestroy(o)
@@ -97,19 +99,20 @@ function phyWeldGroup(toweld,noCollide,weldto1)
   return con
 end
 
---[[
-function phyDestroyGroup(group)
+
+function phyDestroyGroup(group) --tested
   for i,v in ipairs(group) do
     phyDestroy(v.o)
   end
 end
-]]
 
 function phyUnweldGroup(con)
   local function unweld(con)
     if con and type(con)=='table' then
       for i,v in ipairs(con) do
-        v:destroy()
+        if v then
+          v:destroy()
+        end
       end
     end
   end
@@ -120,4 +123,20 @@ end
 
 function phyExists(v)
   return v and v.exists and v.body and v.fixture and v.shape
+end
+
+function phyUnweldBody(body2)
+  body=phyReq(body2,'body')
+  if body then
+    local joints=body:getJoints()
+    for i,v in ipairs(joints) do
+      v:destroy()
+    end
+  end
+end
+
+function phyUnweldGroup2(group)
+  for i,v in ipairs(group) do
+    phyUnweldBody(v.o.body)
+  end
 end

@@ -16,10 +16,22 @@ function phyReq(obj,part)
   end
 end
 
-function phyTeleport(obj,x,y)
+function phyTeleport(obj,x,y,novc)
   local bdy2=phyReq(obj,'body')
   bdy2:setPosition(x,y)
-  phyVCancel(obj)
+  if not novc then
+    phyVCancel(obj)
+  end
+end
+
+function phyFix(obja)
+  local fa=0.1
+  for i,v in ipairs(obja) do
+    local body=phyReq(v,'body')
+    if phyExists(v) and body then
+      body:applyForce(0,fa)
+    end
+  end
 end
 
 function phyVCancel(obj)

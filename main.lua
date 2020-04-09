@@ -11,6 +11,7 @@ function reset()
   welds={}
   spawnsize=25
   stop=false
+  moveobject=nil
   love.physics.setMeter(64)
   world = love.physics.newWorld(0,9.81*love.physics.getMeter(),true)
   ins(objects,phyObject(world,400/2+200,500,400,25))
@@ -28,8 +29,13 @@ function love.update(dt) gc_=(gc_ or -1)+1 if gc_>120 then collectgarbage('colle
   local slowmo=1;if love.keyboard.isDown('t') then slowmo=5 end;if(stop)then slowmo=math.huge end
   world:update(dt/slowmo)
   if(hover and phyExists(objects[hover]) and m1)then
-    phyTeleport(objects[hover],mx,my)
-    phyVCancel(objects[hover])
+    if not moveobject then 
+      moveobject=objects[hover]
+    end
+    phyTeleport(moveobject,mx,my)
+    phyFix(objects)
+  else
+    moveobject=nil
   end
 end
 

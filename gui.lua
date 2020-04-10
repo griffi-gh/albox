@@ -18,6 +18,7 @@ gui.modes={
   { name='Spawn Tool',icon=gui.icons.add,onclick=function() ctool='sp' fig='sqr' end,
     buttons={
       {name='Square',icon=gui.icons.square,onclick=function() fig='sqr' end,fade=function() return not(fig=='sqr') end},
+      {name='Circle',icon=gui.icons.circle,onclick=function() fig='crc' end,fade=function() return not(fig=='crc') end},
     } 
   },
   { name='Hand',icon=gui.icons.hand,onclick=function() ctool='mv' end  },

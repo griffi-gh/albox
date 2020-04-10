@@ -1,11 +1,17 @@
 
-function phyObject(wrl,x,y,w,h,t,m)
+function phyObject(wrl,x,y,w,h,t,s,m)
   m=m or 1
+  s=s or 'sqr'
   if(t=='d')then t='dynamic' elseif(t=='k') then t='kinematic' elseif(t=='s') then t='static' end
   local body = love.physics.newBody(wrl,x,y,t)
-  local shape = love.physics.newRectangleShape(w,h)
+  local shape
+  if(s=='crc')then
+    shape = love.physics.newCircleShape(w or h)
+  elseif(s=='sqr')then
+    shape = love.physics.newRectangleShape(w,h)
+  end
   local fixture = love.physics.newFixture(body,shape,m)
-  return{body=body,shape=shape,fixture=fixture,type=nil,exists=true}
+  return{body=body,shape=shape,fixture=fixture,type=s,exists=true}
 end
 
 function phyReq(obj,part)
@@ -50,7 +56,26 @@ function phyVCancel(obj)
 end
 
 function phyPoly(v)
-  return v.body:getWorldPoints(v.shape:getPoints())
+  local b = phyReq(v,'body')
+  return b:getWorldPoints(v.shape:getPoints())
+end
+
+function phyCirc(v)
+  local b,b2 = phyReq(v,'shape'),phyReq(v,'body')
+  return b2:getX(),b2:getY(),b:getRadius()
+end
+
+
+function phyDraw(v,style)
+  local style=style or "fill"
+  local g=love.graphics 
+  if phyExists(v) then
+    if(v.type=='sqr')then
+      g.polygon(style,phyPoly(v))
+    elseif(v.type=='crc')then
+      g.circle(style,phyCirc(v))
+    end
+  end
 end
 
 function phyWeld(o1o,o2o,noCollide)

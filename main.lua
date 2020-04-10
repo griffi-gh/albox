@@ -1,5 +1,5 @@
 APPNAME='ALBOX'
-VERSION='alpha 0.4'
+VERSION='alpha 0.5'
 ---------------------
 require'fn'
 require'phy'
@@ -64,7 +64,7 @@ function love.draw() local g=love.graphics g.setColor(1,1,1,1) love.graphics.res
   hover=nil
   for i,v in ipairs(objects) do
     if phyExists(v) then
-      g.polygon("fill",phyPoly(v))
+      phyDraw(v)
       
       local ishs=false
       if(#selection>0)then --check if in selection
@@ -87,7 +87,7 @@ function love.draw() local g=love.graphics g.setColor(1,1,1,1) love.graphics.res
       
       if ish or ishs then
         love.graphics.setLineWidth(2)
-        g.polygon("line",phyPoly(v))
+        phyDraw(v,'line')
         love.graphics.setLineWidth(1)
         g.setColor(1,1,1)
       end
@@ -100,7 +100,11 @@ function love.draw() local g=love.graphics g.setColor(1,1,1,1) love.graphics.res
   end
   local curx,cury=mx-spawnsize/2,my-spawnsize/2
   if not hover and ctool=='sp' then
-    g.outlRect(curx,cury,spawnsize)
+    if fig=='crc' then
+      g.outlCirc(curx,cury,spawnsize)
+    elseif fig=='sqr'then
+      g.outlRect(curx,cury,spawnsize)
+    end
   end
   ----------------------------------------------------------
   g.print('FPS:'..love.timer.getFPS()..'\nRAM:'..math.ceil(collectgarbage('count'))..'kb'..'\nF1-HELP')
@@ -141,7 +145,7 @@ function love.mousepressed(x,y,b)
       if not hover then
         local m
         if b==1 then m='d' elseif b==2 then m='s' end
-        ins(objects,phyObject(world,x,y,spawnsize,spawnsize,m,1))
+        ins(objects,phyObject(world,x,y,spawnsize,spawnsize,m,fig))
       end
     elseif ctool=='sl' then
       if b==1 then

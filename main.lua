@@ -59,6 +59,7 @@ function love.update(dt) gc_=(gc_ or -1)+1 if gc_>120 then collectgarbage('colle
 end
 
 function love.draw() local g=love.graphics g.setColor(1,1,1,1) love.graphics.reset()
+  ----------------------------------------------------------
   w,h=g.getWidth(),g.getHeight()
   hover=nil
   for i,v in ipairs(objects) do
@@ -101,6 +102,7 @@ function love.draw() local g=love.graphics g.setColor(1,1,1,1) love.graphics.res
   if not hover and ctool=='sp' then
     g.outlRect(curx,cury,spawnsize)
   end
+  ----------------------------------------------------------
   g.print('FPS:'..love.timer.getFPS()..'\nRAM:'..math.ceil(collectgarbage('count'))..'kb'..'\nF1-HELP')
   if love.keyboard.isDown('f1') then
    g.print(HELP,w/2)
@@ -158,7 +160,7 @@ function love.mousepressed(x,y,b)
         phyDestroy(objects[hover])
       end
     elseif ctool=='uw' then
-      phyAutoDeweld(objects[hover])
+      phyUnweldBody(objects[hover])
     end
   end
 end

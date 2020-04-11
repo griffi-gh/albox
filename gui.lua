@@ -17,11 +17,11 @@ gui.icons={
 gui.modes={
   { name='Spawn Tool',icon=gui.icons.add,onclick=function() ctool='sp' fig='sqr' end,
     buttons={
-      {name='Square',icon=gui.icons.square,onclick=function() fig='sqr' spawnsize=25 end,fade=function() return not(fig=='sqr') end},
-      {name='Circle',icon=gui.icons.circle,onclick=function() fig='crc' spawnsize=15 end,fade=function() return not(fig=='crc') end},
+      {name='Square',icon=gui.icons.square,onclick=function() fig='sqr' spawnsize=25 end,fade=function() return not(fig=='sqr')end},
+      {name='Circle',icon=gui.icons.circle,onclick=function() fig='crc' spawnsize=15 end,fade=function() return not(fig=='crc')end},
     } 
   },
-  { name='Hand',icon=gui.icons.hand,onclick=function() ctool='mv' end  },
+  { name='Hand',icon=gui.icons.hand,onclick=function() ctool='mv' end},
   { name='Delete',icon=gui.icons.trashcan,onclick=function() ctool='dl' end,
     buttons={
       {name='Reload',icon=gui.icons.no,onclick=function() reset() end},
@@ -62,7 +62,7 @@ function gui.draw() local g=love.graphics
   g.setColor(1,1,1)
   local sp=gui.modes[gui.selected].buttons
   
-  if(sp)then
+  if(sp and #sp>0)then
     gui.subpanel={x=gui.panel.x,y=gui.panel.y+gui.panel.h+3,w=gui.panel.w,h=oof(sp)}
     g.outlRect(gui.subpanel.x,gui.subpanel.y,gui.subpanel.w,gui.subpanel.h,{1,1,1,0.5})
     for i,v in ipairs(sp)do
@@ -97,16 +97,18 @@ function gui.click(x,y,b)
       return true
     elseif(y<gui.subpanel.y+gui.subpanel.h)then local py=gui.panel.y+gui.panel.h
       local sp=gui.modes[gui.selected].buttons
-      for i,v in ipairs(sp) do
-        local i2=i-1
-        if (y-py>(i2*sep)) and (y-py<(i2+1)*sep) then
-          if b==1 then
-            sp[i].onclick()
+      if sp and #sp>0 then
+        for i,v in ipairs(sp) do
+          local i2=i-1
+          if (y-py>(i2*sep)) and (y-py<(i2+1)*sep) then
+            if b==1 then
+              sp[i].onclick()
+            end
+            gui.text2=v.name
           end
-          gui.text2=v.name
         end
+        return true
       end
-      return true
     end
   end
 end

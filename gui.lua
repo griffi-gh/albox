@@ -17,8 +17,8 @@ gui.icons={
 gui.modes={
   { name='Spawn Tool',icon=gui.icons.add,onclick=function() ctool='sp' fig='sqr' end,
     buttons={
-      {name='Square',icon=gui.icons.square,onclick=function() fig='sqr' end,fade=function() return not(fig=='sqr') end},
-      {name='Circle',icon=gui.icons.circle,onclick=function() fig='crc' end,fade=function() return not(fig=='crc') end},
+      {name='Square',icon=gui.icons.square,onclick=function() fig='sqr' spawnsize=25 end,fade=function() return not(fig=='sqr') end},
+      {name='Circle',icon=gui.icons.circle,onclick=function() fig='crc' spawnsize=15 end,fade=function() return not(fig=='crc') end},
     } 
   },
   { name='Hand',icon=gui.icons.hand,onclick=function() ctool='mv' end  },
@@ -94,6 +94,7 @@ function gui.click(x,y,b)
           end
         end
       end
+      return true
     elseif(y<gui.subpanel.y+gui.subpanel.h)then local py=gui.panel.y+gui.panel.h
       local sp=gui.modes[gui.selected].buttons
       for i,v in ipairs(sp) do
@@ -105,8 +106,8 @@ function gui.click(x,y,b)
           gui.text2=v.name
         end
       end
+      return true
     end
-    return true
   end
 end
 

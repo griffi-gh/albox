@@ -1,5 +1,5 @@
 APPNAME='ALBOX'
-VERSION='alpha 0.5'
+VERSION='alpha 0.6'
 ---------------------
 require'fn'
 require'phy'
@@ -10,7 +10,7 @@ lver='LÖVE '..lv1..'.'..lv2
 if not(love.isVersionCompatible('11.3')) then warning_love2d=true end
 
 --OLDHELP='WHEEL-Size\nLMB-SPAWN/MOVE\nRMB-SPAWN STATIC/DELETE\nSPACE-PAUSE\nT-Slowmo\nR-RESET\nW-ADD TO SELECTION\nQ-WELD SELECTED\nU-CANCEL WELD'
-HELP='WHEEL(or [ ])-Brush size\nLMB-Spawn dynamic/Select/Primary action\nRMB-Spawn static/secondary action\nSPACE-PAUSE\nT-Slowmo\nNumber keys(1-9)-Switch mode shortcut\nTODO:Better help'
+HELP='WHEEL(or [ ])-Brush size\nLMB-Spawn dynamic/Select/Primary action\nRMB-Spawn static/secondary action\nSPACE-PAUSE\nT-Slowmo\nNumber keys(1-9)-Switch mode shortcut\nTODO:Better help\nARROW KEYS-Move Selected (Selection mode)'
 
 function cancelWeld()
   if(#welds>0)then
@@ -43,22 +43,36 @@ function love.load(arg)
 end
 
 function love.update(dt) gc_=(gc_ or -1)+1 if gc_>120 then collectgarbage('collect') gc_=nil end
+  --local dts=1/dt
+  SPD=dt/(1/60)
   mx,my=love.mouse.getX(),love.mouse.getY()
   m1=love.mouse.isDown(1)
   local slowmo=1;if love.keyboard.isDown('t') then slowmo=5 end;if(stop)then slowmo=math.huge end
   world:update(dt/slowmo)
-  if(hover and phyExists(objects[hover]) and m1 and ctool=='mv')then
-    if not moveobject then 
-      movetmp={o=objects[hover],x=mx,y=my}
+  
+  if(hover and m1 and ctool=='mv')then
+    if(phyExists(objects[movetmp]))then
+      phyTeleport(objects[movetmp],mx,my)
+      phyFix(objects)
     end
-    phyTeleport(movetmp.o,mx,my)
-    phyFix(objects)
   else
-    movetmp=nil
+    movetmp=hover
   end
+  
+  if ctool=='sl' then
+    local ofx,ofy,p=lrud_control(dt,2)
+    if p then
+      phyPushGroup(selection,ofx,ofy) 
+    end
+  end
+  
+  --if love.keyboard.isDown('v')then love.window.setVSync(1) end
+  --if love.keyboard.isDown('b')then love.window.setVSync(0) end
 end
 
-function love.draw() local g=love.graphics g.setColor(1,1,1,1) love.graphics.reset()
+function love.draw() 
+  local g=love.graphics 
+  love.graphics.reset()
   ----------------------------------------------------------
   w,h=g.getWidth(),g.getHeight()
   hover=nil

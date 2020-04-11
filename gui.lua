@@ -78,10 +78,12 @@ function gui.draw() local g=love.graphics
   local text=gui.modes[gui.selected].name
   g.print(text,w-(text:len()*8),h-15)
   g.print(gui.text2,w-(gui.text2:len()*8),h-30)
+  --dgprint()
 end
 
 function gui.click(x,y,b)
   gui.text2=''
+  if not(gui.panel and gui.subpanel) then return end
   if(x>w-gui.panel.w)then
     local sep=gui.panel.s
     if(y<gui.subpanel.y)then

@@ -1,4 +1,6 @@
 
+--local va={}
+
 function phyObject(wrl,x,y,w,h,t,s,m)
   m=m or 1
   s=s or 'sqr'
@@ -28,6 +30,24 @@ function phyTeleport(obj,x,y,novc)
   if not novc then
     phyVCancel(obj)
   end
+end
+
+function phyPushGroup(gr,x,y,novc) --GR2 IS XYMAP
+  for i,v in ipairs(gr) do
+    if phyExists(v.o) then
+      local absx,absy=v.o.body:getX(),v.o.body:getY()
+      phyTeleport(v.o,x+absx,y+absy,novc)
+    end
+  end
+end
+
+function phyGroup2xymap(gr)
+  local xym={}
+  local copied=copyt(gr,true)
+  for i,v in ipairs(copied) do
+    xym[i]={x=v.o.body:getX(),y=v.o.body:getY(),i=v.i}
+  end
+  return xym
 end
 
 function phyFix(obja)
